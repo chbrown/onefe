@@ -1,0 +1,27 @@
+@import "/static/css/prefixer.less";
+
+body { }
+.nowrap { white-space: nowrap; }
+@right: 220px;
+#content {
+  margin-right: @right + 30px;
+  padding: 10px;
+}
+.fix-right {
+  position: fixed;
+  top: 0;
+  right: 0;
+  padding: 10px;
+  height: 98%;
+  overflow: scroll;
+  width: @right;
+  h3 {
+    margin-top: 10px;
+  }
+}
+.valign {
+  input, button {
+    margin-right: 4px;
+    vertical-align: 0;
+  }
+}
