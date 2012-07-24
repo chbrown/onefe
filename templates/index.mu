@@ -55,13 +55,17 @@ head.ready(function() {
     $(this.parentNode.parentNode).trigger('change');
   });
 
-  function syncInputs() {
-    $('#left input.currency').val(left_currency);
-    $('#left select.currency option[value="' + left_currency + '"]').prop('selected', true);
-    $('#left input.units').val(fromUSD(USD, left_currency));
-    $('#right input.currency').val(right_currency);
-    $('#right select.currency option[value="' + right_currency + '"]').prop('selected', true);
-    $('#right input.units').val(fromUSD(USD, right_currency));
+  function syncInputs(anchor) {
+    if (anchor !== 'l') {
+      $('#left input.currency').val(left_currency);
+      $('#left select.currency option[value="' + left_currency + '"]').prop('selected', true);
+      $('#left input.units').val(fromUSD(USD, left_currency));
+    }
+    if (anchor !== 'r') {
+      $('#right input.currency').val(right_currency);
+      $('#right select.currency option[value="' + right_currency + '"]').prop('selected', true);
+      $('#right input.units').val(fromUSD(USD, right_currency));
+    }
   }
 
   $(window).on('beforeunload', function() {
@@ -80,7 +84,10 @@ head.ready(function() {
       $(this).find('option[value="' + left_currency + '"]').prop('selected', true);
       $(this).find('input.currency').val(left_currency);
     }
-    syncInputs();
+    var left_units = $(this).find('input.units').val();
+    USD = toUSD(left_units, left_currency);
+    syncInputs('l');
+    syncPlatform();
   });
   $('#right').on('change', function(event, currency) {
     if (currency && right_currency !== currency) {
@@ -88,16 +95,32 @@ head.ready(function() {
       $(this).find('option[value="' + right_currency + '"]').prop('selected', true);
       $(this).find('input.currency').val(right_currency);
     }
-    syncInputs();
-    // recalculate($('#right'), $('#left'));
+    var right_units = $(this).find('input.units').val();
+    USD = toUSD(right_units, right_currency);
+    syncInputs('r');
+    syncPlatform();
   });
 
 
   function separateThousands(x, separator) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, separator);
   }
+  function parseMoney(str) {
+    if (str.match(/,.*\./)) {
+      // commas then dot (american):
+      return parseFloat(str.replace(/,/g, ''));
+    }
+    else if (str.match(/\..*,/)) {
+      // dot then comma (euro)
+      return parseFloat(str.replace(/\./g, '').replace(/,/g, '.'));
+    }
+    else {
+      // only one type: ambiguous
+      return parseFloat(str.replace(/[.,]/g, ''));
+    }
+  }
   function toUSD(units, currency) {
-    return parseFloat(units) / rates[currency];
+    return parseMoney(units) / rates[currency];
   }
   function fromUSD(units, currency) {
     var thousands = '.', decimal = ',';
@@ -136,7 +159,7 @@ head.ready(function() {
     real_y = 0,
     left_x = 100,
     right_x = width - 100,
-    cols = [(left_x - 75), (right_x - 75)],
+    cols = [{x: (left_x - 75), color: '#062109'}, {x: (right_x - 75), color: '#0a810d'}],
     control_height = height - 70,
     usdScale = d3.scale.log().domain([220000, 0.22]).range([0, control_height]);
 
@@ -176,7 +199,7 @@ head.ready(function() {
     real_y = y;
   }
   function syncPlatform() {
-    y = constrain(usdScale(USD), 0, control_height);
+    real_y = y = constrain(usdScale(USD), 0, control_height);
     platform.attr("transform", "translate(0," + y + ")");
   }
   platform.selectAll('rect.slider').data(cols)
@@ -184,7 +207,7 @@ head.ready(function() {
       .append("g")
         .attr("transform", function(d) { return "translate(" + d + ",0)"; })
         .append('rect')
-          .attr('class', function(d, i) { return 'slider slider' + (i + 1); })
+          .attr('fill', function(d, i) { return  'slider slider' + (i + 1); })
           .attr('width', 150)
           .attr('height', 50);
         // .append('title')
@@ -201,39 +224,53 @@ head.ready(function() {
   //     .attr("x", 6 + sankey.nodeWidth())
   //     .attr("text-anchor", "start");
 
-  // $("#container").width(width).height(height);
+  function Plot(lines) {
+  }
+
+
+  function Line(name) {
+    this.pts = [];
+  }
+  Line.prototype.add = function(x, y) {
+    this.pts.push({x: x, y: y});
+  };
+  Line.prototype.draw = function(xScale, yScale) {
+    return d3.svg.line()
+      .x(function(d, i) { return xScale(d.x); })
+      .y(function(d, i) { return yScale(d.y); })
+      (this.pts);
+  }
+
   function drawBg() {
     var bg_svg = d3.select("#bg").append("svg")
       .attr("width", document.width)
       .attr("height", document.height);
-    // console.log(bg_svg);
 
-    var names = Object.keys(currencies), lines = names.map(function() { return []; });
-    historical_rates.forEach(function(historical_rate) {
-      historical_rate.dt = new Date(historical_rate.dt);
-      historical_rate.extent = d3.extent(names, function(name) { return historical_rate.rates[name]; });
+    var y_min = 0.9,
+      y_max = 1.2,
+      names = Object.keys(currencies),
+      lines = names.map(function(name) { return new Line(name); }),
+      base_hist = historical_rates[t === 0 ? t : 0];
+    console.log(lines);
+    for (var t = 0, tlen = historical_rates.length; t < tlen; t++) {
+      var hist = historical_rates[t];        
+      hist.dt = new Date(hist.dt);
       names.forEach(function(name, i) {
-        lines[i].push({x: historical_rate.dt, y: historical_rate.rates[name]});
+        var y = hist.rates[name] / base_hist.rates[name];
+        lines[i].add(hist.dt, y);
       });
-    });
+    }
 
-    var x_domain = d3.extent(historical_rates, function(h) { return h.dt; }),
-      y_min = d3.min(historical_rates, function(h) { return h.extent[0]; }),
-      y_max = d3.min(historical_rates, function(h) { return h.extent[1]; }),
-      xScale = d3.scale.linear().domain(x_domain).range([0, document.width]),
-      yScale = d3.scale.log().domain([y_min, y_max]).range([20, document.height - 40]),
-      colorInterpolation = d3.interpolateHsl("#880000", "#0000AA"),
-      colorScale = d3.scale.category20();
+    var x_min = base_hist.dt,
+      x_max = hist.dt,
+      xScale = d3.scale.linear().domain([x_min, x_max]).range([0, document.width]),
+      yScale = d3.scale.linear().domain([y_min, y_max]).range([0, document.height]),
+      colorInterpolation = d3.interpolateHsl("#0f3a58", "#6f3a5f");
 
-    // window.lines = lines;
-    // window.names = names;
     bg_svg.selectAll('path')
       .data(lines)
     .enter().append('path')
-      .attr('d', d3.svg.line()
-        .x(function(d, i) { return xScale(d.x); })
-        .y(function(d, i) { return yScale(d.y); })
-      )
+      .attr('d', function(line) { return line.draw(xScale, yScale); })
       .attr('fill', 'none')
       .attr('stroke', function(d, i) { return colorInterpolation(Math.random()); });
 
@@ -267,8 +304,6 @@ head.ready(function() {
         .select('text')
           .text(currencies[closest_name] + ': ' + h.rates[closest_name].toFixed(2) + ' (' + date + ')');
       // console.log(closest_name + ' (' + currencies[closest_name] + ') ' + h.rates[closest_name]);
-      // var i = posToI(m[0]-padding.left, m[1]-padding.top);
-      // highlightAt(i);
     })
   }
   /*.on('click', function() {
@@ -276,10 +311,6 @@ head.ready(function() {
     var url = "http://searchyc.com/" + articles[lastHighlight].name.toLowerCase().split(/[^a-z]+/i).join('+');
     window.location = url;
   });*/
-  
-
-  // var g = svg.append("g")
-    // 
 
 });
 </script>

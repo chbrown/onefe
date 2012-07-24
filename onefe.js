@@ -3,7 +3,6 @@ var __ = require('underscore')._,
     fs = require('fs'),
     path = require('path'),
     http = require('http'),
-    // Cookies = require('cookies'),
     amulet = require('amulet'),
     wrappers = require('wrappers'),
     argv = require('optimist').argv,
@@ -35,8 +34,14 @@ http.createServer(function(req, res) {
   var keys = Object.keys(rates).sort(),
     most_recent = keys[keys.length - 1],
     most_recent_rates = rates[most_recent],
-    historical_keys = keys.slice(keys.length - 100),
-    historical_rates = historical_keys.map(function(key) { return { dt: key.replace(/forex:/, ''), rates: rates[key] }; });
+    historical_keys = keys.slice(keys.length - 100);
+  
+  var historical_rates = historical_keys.map(function(key) {
+    return {
+      dt: key.replace(/forex:/, ''),
+      rates: rates[key]
+    };
+  });
   
   res.writeHead(200, {"Content-Type": "text/html"});
   amulet.render(res, ['layout.mu', 'index.mu'], {rates: most_recent_rates,
