@@ -6,10 +6,8 @@
 <script src="/static/js/less.js"></script>
 <title>Forex</title>
 <script src="/static/js/head.js"></script>
-<div id="container">
-  {{<}}
-</div>
+{{<}}
 <script>
-head.js("/static/js/underscore.js").js("/static/js/date.js").js("/static/js/local.js");
+head.js("/static/js/underscore.js").js("/static/js/local.js").js("/static/js/d3.v2.js");
 head.js("/static/js/jquery.js", "/static/js/jquery.flags.js");
 </script>

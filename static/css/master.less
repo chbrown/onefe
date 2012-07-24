@@ -1,29 +1,70 @@
 @import "/static/css/prefixer.less";
 
 body {
-  background: url(/static/img/noise_lines.png) repeat-both;
+  background: transparent url("/static/img/tiny_grid.png") repeat top left;
+  font-family: 'Helvetica Neue', Helvetica, Arial;
+  margin: 0;
+}
+input, button, textarea {
+  box-sizing: border-box;
 }
 .nowrap { white-space: nowrap; }
-@right: 220px;
-#content {
-  margin-right: @right + 30px;
-  padding: 10px;
+#chart, #input {
+  width: 800px;
+  height: 400px;
 }
-.fix-right {
-  position: fixed;
-  top: 0;
-  right: 0;
-  padding: 10px;
-  height: 98%;
-  overflow: scroll;
-  width: @right;
-  h3 {
-    margin-top: 10px;
+#bg {
+  z-index: -1;
+  position: absolute;
+  text {
+    font-size: 12px;
   }
+  // svg {
+    // z-index: -10;
+  // }
 }
-.valign {
-  input, button {
-    margin-right: 4px;
-    vertical-align: 0;
+#input {
+  // border: 1px dotted green;
+  font: 20px 'Helvetica Neue', Helvetica, Arial;
+  margin: 0 auto;
+  padding: 5px 0;
+  #left, #right, select {
+    width: 240px;
   }
+  #left { float: left; }
+  #right { float: right; }
+  input {
+    font: inherit;
+    text-align: center;
+  }
+  input.currency {
+    width: 60px;
+  }
+  .units {
+    width: 180px;
+  }
+  select {
+    position: relative;
+    top: -5px;
+  }
+  height: 40px;
+}
+#chart {
+  margin: 30px auto;
+}
+
+.platform {
+  border: 1px solid gray;
+}
+.slider1 {
+  fill: #1f77b4;
+  stroke: #0f3a58;
+}
+.slider2 {
+  fill: #e377c2;
+  stroke: #6f3a5f;
+}
+.track {
+  stroke: #222;
+  fill: white;
 }
