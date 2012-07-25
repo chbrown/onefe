@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <link rel="Shortcut Icon" href="/static/img/favicon.ico">
 <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
-<link rel="stylesheet/css" href="/static/css/master.css">
+<link rel="stylesheet" type="text/css" href="/static/css/master.css" />
 <title>Forex</title>
 <script src="/static/js/head.js"></script>
 {{<}}

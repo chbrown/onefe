@@ -285,13 +285,13 @@ head.ready(function() {
   function drawBg() {
     var bg_svg = d3.select("#bg").append("svg")
       .attr("width", document.width)
-      .attr("height", document.height);
+      .attr("height", document.height - 10);
 
     var abbrs = Object.keys(currencies),
       names = abbrs.map(function(abbr) { return currencies[abbr]; }),
       plot = new Plot(names),
       base_hist = historical_rates[t === 0 ? t : 0],
-      colorInterpolation = d3.interpolateHsl("#0f3a58", "#6f3a5f");
+      colorInterpolation = d3.interpolateHsl(cols[0].color, cols[1].color);
 
     for (var t = 0, tlen = historical_rates.length; t < tlen; t++) {
       var hist = historical_rates[t];
@@ -303,7 +303,7 @@ head.ready(function() {
     }
 
     var xScale = d3.scale.linear().domain(plot.extentX()).range([0, document.width]),
-      yScale = d3.scale.linear().domain([0.90909, 1.1]).range([0, document.height]);
+      yScale = d3.scale.linear().domain([0.952, 1.05]).range([0, document.height]);
 
 
     bg_svg.selectAll('path')
