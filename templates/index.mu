@@ -37,7 +37,8 @@ function constrain(num, min, max) {
 
 head.ready(function() {
   width = $("#chart").width();
-  height = $("#chart").height();
+  height = document.height * 0.85;
+  $("#chart").height(height);
   $('#input').width(width);
   var options = $.map(currencies, function(name, abbr) { return '<option value="' + abbr + '">' + name + '</option>'; }).join('');
   $('select.currency').append(options);
@@ -76,6 +77,7 @@ head.ready(function() {
   $(function() {
     drawBg();
     syncInputs();
+    syncPlatform();
   });
 
   $('#left').on('change', function(event, currency) {
@@ -153,22 +155,21 @@ head.ready(function() {
   var g = svg.append("g")
     .attr("transform", "translate(10,10)")
 
-  // link.append("title")
-      // .text(function(d) { return d.source.name + " → " + d.target.name + "\n" + format(d.value); });
-  var y = 0,
-    real_y = 0,
+  var control_height = height - 70,
+    usdScale = d3.scale.log().domain([220000, 0.22]).range([0, control_height]),
+    y = constrain(usdScale(USD), 0, control_height),
+    real_y = isNaN(y) ? 0 : y,
     left_x = 100,
     right_x = width - 100,
-    cols = [{x: (left_x - 75), color: '#062109'}, {x: (right_x - 75), color: '#0a810d'}],
-    control_height = height - 70,
-    usdScale = d3.scale.log().domain([220000, 0.22]).range([0, control_height]);
+    cols = [{x: (left_x - 75), color: '#ef9952'}, {x: (right_x - 75), color: '#0a810d'}];
+    
 
   // y = 0 is $220000 USD
   // y = height - 50 is $.22 USD
   g.selectAll('rect.track').data(cols)
     .enter()
       .append('rect')
-        .attr('x', function(d) { return d + 70; })
+        .attr('x', function(d) { return d.x + 70; })
         .attr('y', 25)
         .attr('rx', 5)
         .attr('class', 'track')
@@ -189,7 +190,7 @@ head.ready(function() {
       .attr('height', 1.5);
 
   function drag() {
-    real_y += d3.event.dy;
+    real_y = isNaN(real_y) ? 0 : real_y + d3.event.dy;
     y = constrain(real_y, 0, control_height);
     platform.attr("transform", "translate(0," + y + ")");
     USD = usdScale.invert(y);
@@ -205,9 +206,10 @@ head.ready(function() {
   platform.selectAll('rect.slider').data(cols)
     .enter()
       .append("g")
-        .attr("transform", function(d) { return "translate(" + d + ",0)"; })
+        .attr("transform", function(d) { return "translate(" + d.x + ",0)"; })
         .append('rect')
-          .attr('fill', function(d, i) { return  'slider slider' + (i + 1); })
+          .attr('fill', function(d) { return d.color; })
+          .attr('stroke', function(d) { return d3.hsl(d.color).darker(2); })
           .attr('width', 150)
           .attr('height', 50);
         // .append('title')
@@ -224,51 +226,88 @@ head.ready(function() {
   //     .attr("x", 6 + sankey.nodeWidth())
   //     .attr("text-anchor", "start");
 
-  function Plot(lines) {
+  function Plot(names) {
+    this.lines = names.map(function(name) { return new Line(name); });
   }
+  Plot.prototype.nearest = function(x, y) {
+    var self = this,
+      xs = this.lines[0].pts.map(function(pt) { return pt.x.getTime(); }),
+      xI = Plot.between(x, xs),
+      // xI is now set to the line.pts[<index>] of the closest x-point
+      yPts = this.lines.map(function(line) { return line.pts[xI]; }).sort(function(a, b) { return a.y - b.y; }),
+      ys = yPts.map(function(yPt) { return yPt.y; }),
+      yI = Plot.between(y, ys);
 
+    return yPts[yI];
+  };
+  Plot.prototype.extentY = function() {
+    var min = 1000000000, max = -1000000000;
+    this.lines.forEach(function(line) {
+      line.pts.forEach(function(pt) {
+        min = Math.min(min, pt.y);
+        max = Math.max(max, pt.y);
+      })
+    });
+    return [min, max];
+  };
+  Plot.prototype.extentX = function() {
+    var line0_pts = this.lines[0].pts,
+      min = line0_pts[0].x,
+      max = line0_pts[line0_pts.length - 1].x;
+    return [min, max];
+  };
+  Plot.between = function(needle, haystack) {
+    // haystack should already be sorted
+    for (var i = 0, len = haystack.length; i < len; i++) {
+      var straw = haystack[i], next_straw = haystack[i + 1];
+      if (needle < next_straw) {
+        return (needle - straw > next_straw - needle) ? i + 1 : i; // next_straw : straw
+      }
+    }
+    return len - 1;
+  };
 
-  function Line(name) {
+  function Line(text) {
+    this.text = text;
     this.pts = [];
   }
-  Line.prototype.add = function(x, y) {
-    this.pts.push({x: x, y: y});
+  Line.prototype.add = function(x, y, text) {
+    this.pts.push({x: x, y: y, text: text, line: this});
   };
   Line.prototype.draw = function(xScale, yScale) {
-    return d3.svg.line()
+    var d3_line = d3.svg.line()
       .x(function(d, i) { return xScale(d.x); })
       .y(function(d, i) { return yScale(d.y); })
       (this.pts);
-  }
+    return d3_line;
+  };
 
   function drawBg() {
     var bg_svg = d3.select("#bg").append("svg")
       .attr("width", document.width)
       .attr("height", document.height);
 
-    var y_min = 0.9,
-      y_max = 1.2,
-      names = Object.keys(currencies),
-      lines = names.map(function(name) { return new Line(name); }),
-      base_hist = historical_rates[t === 0 ? t : 0];
-    console.log(lines);
+    var abbrs = Object.keys(currencies),
+      names = abbrs.map(function(abbr) { return currencies[abbr]; }),
+      plot = new Plot(names),
+      base_hist = historical_rates[t === 0 ? t : 0],
+      colorInterpolation = d3.interpolateHsl("#0f3a58", "#6f3a5f");
+
     for (var t = 0, tlen = historical_rates.length; t < tlen; t++) {
-      var hist = historical_rates[t];        
+      var hist = historical_rates[t];
       hist.dt = new Date(hist.dt);
-      names.forEach(function(name, i) {
-        var y = hist.rates[name] / base_hist.rates[name];
-        lines[i].add(hist.dt, y);
+      abbrs.forEach(function(abbr, abbr_i) {
+        var y = hist.rates[abbr] / base_hist.rates[abbr];
+        plot.lines[abbr_i].add(hist.dt, y, hist.dt.toISOString().split(/:/).slice(0, 2).join(':').replace(/T/, ' '));
       });
     }
 
-    var x_min = base_hist.dt,
-      x_max = hist.dt,
-      xScale = d3.scale.linear().domain([x_min, x_max]).range([0, document.width]),
-      yScale = d3.scale.linear().domain([y_min, y_max]).range([0, document.height]),
-      colorInterpolation = d3.interpolateHsl("#0f3a58", "#6f3a5f");
+    var xScale = d3.scale.linear().domain(plot.extentX()).range([0, document.width]),
+      yScale = d3.scale.linear().domain([0.90909, 1.1]).range([0, document.height]);
+
 
     bg_svg.selectAll('path')
-      .data(lines)
+      .data(plot.lines)
     .enter().append('path')
       .attr('d', function(line) { return line.draw(xScale, yScale); })
       .attr('fill', 'none')
@@ -279,38 +318,20 @@ head.ready(function() {
     highlighter.append('svg:text').attr('fill', 'black').attr('x', 5).attr('y', -4);
 
     d3.select('body').on('mousemove', function() {
-      var m = d3.svg.mouse(bg_svg[0][0]);
-      var xI = xScale.invert(m[0]);
-      var yI = yScale.invert(m[1]);
-      var h = 0;
-      for (var i = 0, l = historical_rates.length - 1; i < l; i++) {
-        if (historical_rates[i].dt < xI && xI < historical_rates[i+1].dt) {
-          h = historical_rates[i];
-          break;
-        }
-      }
-      var y_min = 1000000000, closest_name = '';
-      names.forEach(function(name, i) {
-        var dist = Math.abs(yI - h.rates[name]);
-        if (dist < y_min) {
-          y_min = dist;
-          closest_name = name;
-        }
-      });
+      var m = d3.svg.mouse(bg_svg[0][0]),
+        pt = plot.nearest(xScale.invert(m[0]), yScale.invert(m[1]));
 
-      var date = h.dt.toISOString().split(/T/)[0];
+      // console.log([pt.x, pt.y], [xScale(pt.x), yScale(pt.y)], m);
+
       highlighter
-        .attr("transform", "translate(" + xScale(h.dt) + "," + yScale(h.rates[closest_name]) + ")")
+        .attr("transform", "translate(" + xScale(pt.x) + "," + yScale(pt.y) + ")")
         .select('text')
-          .text(currencies[closest_name] + ': ' + h.rates[closest_name].toFixed(2) + ' (' + date + ')');
+          .text(pt.line.text + ' (' + pt.text + ')');
+
+      // closest_name] + ': ' + h.rates[closest_name].toFixed(2) + ' (' + date + ')'
       // console.log(closest_name + ' (' + currencies[closest_name] + ') ' + h.rates[closest_name]);
     })
   }
-  /*.on('click', function() {
-    if (lastHighlight == -1) return;
-    var url = "http://searchyc.com/" + articles[lastHighlight].name.toLowerCase().split(/[^a-z]+/i).join('+');
-    window.location = url;
-  });*/
 
 });
 </script>

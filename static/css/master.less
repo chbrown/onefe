@@ -1,5 +1,3 @@
-@import "/static/css/prefixer.less";
-
 body {
   background: transparent url("/static/img/tiny_grid.png") repeat top left;
   font-family: 'Helvetica Neue', Helvetica, Arial;
@@ -9,9 +7,8 @@ input, button, textarea {
   box-sizing: border-box;
 }
 .nowrap { white-space: nowrap; }
-#chart, #input {
+#chart {
   width: 800px;
-  height: 400px;
 }
 #bg {
   z-index: -1;
@@ -19,12 +16,8 @@ input, button, textarea {
   text {
     font-size: 12px;
   }
-  // svg {
-    // z-index: -10;
-  // }
 }
 #input {
-  // border: 1px dotted green;
   font: 20px 'Helvetica Neue', Helvetica, Arial;
   margin: 0 auto;
   padding: 5px 0;
@@ -56,14 +49,6 @@ input, button, textarea {
 .platform {
   border: 1px solid gray;
 }
-// .slider1 {
-//   fill: #1f77b4;
-//   stroke: #0f3a58;
-// }
-// .slider2 {
-//   fill: #e377c2;
-//   stroke: #6f3a5f;
-// }
 .track {
   stroke: #222;
   fill: white;
