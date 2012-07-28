@@ -22,8 +22,7 @@
 <div id="chart"></div>
 
 <script>
-var historical_rates = {{{historical_rates | JSON.stringify}}},
-  rates = {{{rates | JSON.stringify}}},
+var rates = {{{rates | JSON.stringify}}},
   currencies = {{{currencies | JSON.stringify}}},
   width = 0,
   height = 0,
@@ -57,6 +56,7 @@ head.ready(function() {
   });
 
   function syncInputs(anchor) {
+    // console.log('syncInputs', anchor, USD);
     if (anchor !== 'l') {
       $('#left input.currency').val(left_currency);
       $('#left select.currency option[value="' + left_currency + '"]').prop('selected', true);
@@ -75,9 +75,11 @@ head.ready(function() {
     localStorage.right_currency = right_currency;
   });
   $(function() {
-    drawBg();
     syncInputs();
     syncPlatform();
+    $.getJSON('/history.json', function(data, textStatus, jqXHR) {
+      drawBg(data);
+    });
   });
 
   $('#left').on('change', function(event, currency) {
@@ -118,7 +120,7 @@ head.ready(function() {
     }
     else {
       // only one type: ambiguous
-      return parseFloat(str.replace(/[.,]/g, ''));
+      return parseFloat(str.split(/[.,]/g, 2)[0]);
     }
   }
   function toUSD(units, currency) {
@@ -282,7 +284,7 @@ head.ready(function() {
     return d3_line;
   };
 
-  function drawBg() {
+  function drawBg(historical_rates) {
     var bg_svg = d3.select("#bg").append("svg")
       .attr("width", document.width)
       .attr("height", document.height - 10);
@@ -320,8 +322,6 @@ head.ready(function() {
     d3.select('body').on('mousemove', function() {
       var m = d3.svg.mouse(bg_svg[0][0]),
         pt = plot.nearest(xScale.invert(m[0]), yScale.invert(m[1]));
-
-      // console.log([pt.x, pt.y], [xScale(pt.x), yScale(pt.y)], m);
 
       highlighter
         .attr("transform", "translate(" + xScale(pt.x) + "," + yScale(pt.y) + ")")
