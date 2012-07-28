@@ -56,6 +56,15 @@ head.ready(function() {
   });
 
   function syncInputs(anchor) {
+    var current_domain = usdScale.domain(); // [max, min]
+    if (USD < current_domain[1]) {
+      current_domain[1] = USD;
+      usdScale = usdScale.domain(current_domain);
+    }
+    else if (USD > current_domain[0]) {
+      current_domain[0] = USD;
+      usdScale = usdScale.domain(current_domain);
+    }
     // console.log('syncInputs', anchor, USD);
     if (anchor !== 'l') {
       $('#left input.currency').val(left_currency);
@@ -110,18 +119,33 @@ head.ready(function() {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, separator);
   }
   function parseMoney(str) {
-    if (str.match(/,.*\./)) {
-      // commas then dot (american):
-      return parseFloat(str.replace(/,/g, ''));
+    var multiple = 1;
+    if (str.match(/k/i)) {
+      multiple = 1000;
+      str = str.replace(/k/i, '');
+    } else if (str.match(/mi?/i)) {
+      multiple = 1000000;
+      str =str.replace(/mi?/i, '');
     }
-    else if (str.match(/\..*,/)) {
+    else if (str.match(/bi?/i)) {
+      multiple = 1000000000;
+      str = str.replace(/bi?/i, '');
+    }
+
+
+    if (str.match(/,\d{3},/) || str.match(/,.*\./) || str.match(/,.*,/)) {
+      // commas then dot (american):
+      str = str.replace(/,/g, '')
+    }
+    else if (str.match(/\.\d{3}\./) || str.match(/\..*,/) || str.match(/\..*\./)) {
       // dot then comma (euro)
-      return parseFloat(str.replace(/\./g, '').replace(/,/g, '.'));
+      str = str.replace(/\./g, '').replace(/,/g, '.');
     }
     else {
       // only one type: ambiguous
-      return parseFloat(str.split(/[.,]/g, 2)[0]);
+      str = str.split(/[.,]/g, 2)[0]
     }
+    return parseFloat(str) * multiple;
   }
   function toUSD(units, currency) {
     return parseMoney(units) / rates[currency];
@@ -164,7 +188,7 @@ head.ready(function() {
     left_x = 100,
     right_x = width - 100,
     cols = [{x: (left_x - 75), color: '#ef9952'}, {x: (right_x - 75), color: '#0a810d'}];
-    
+
 
   // y = 0 is $220000 USD
   // y = height - 50 is $.22 USD
