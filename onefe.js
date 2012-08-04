@@ -26,6 +26,7 @@ redis.keys('forex:*', function(err, rate_keys) {
 
 sub_redis.on('message', function (channel, message) {
   var payload = JSON.parse(message);  // message = {date: date_iso8601, rates: payload.rates}
+  console.log("Got sub_redis message from worker: " + payload.date.toString());
   all_rates[payload.date] = payload.rates;
   most_recent = payload.rates;
 });
