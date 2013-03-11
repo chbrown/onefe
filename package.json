@@ -10,10 +10,9 @@
   "main" : "forex.js",
   "dependencies" : {
     "amulet": "git://github.com/chbrown/amulet.git",
-    "wrappers": "git://github.com/chbrown/wrappers.git",
-    "exchange-rates": "x.x.x",
-    "optimist": "x.x.x",
-    "redis": "x.x.x",
-    "underscore": "x.x.x"
+    "open-exchange-rates": "*",
+    "optimist": "*",
+    "redis": "*",
+    "underscore": "*"
   }
 }
