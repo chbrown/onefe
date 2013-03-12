@@ -12,7 +12,8 @@ var pubsub_redis = redis.createClient();
 
 amulet.set({minify: true, root: path.join(__dirname, 'templates')});
 
-var all_rates = {}, most_recent;
+var all_rates = {};
+var most_recent = null;
 main_redis.keys('forex:*', function(err, rate_keys) {
   main_redis.mget(rate_keys, function(err, cached_rates) {
     for (var i = 0, l = rate_keys.length; i < l; i++) {
@@ -39,14 +40,14 @@ function refreshMostRecent() {
 http.createServer(function(req, res) {
   console.time(req.url);
   if (req.url.match(/histor/)) {
-    var keys = Object.keys(all_rates).sort(),
-      historical_keys = keys.slice(keys.length - 100),
-      historical_rates = historical_keys.map(function(key) {
-        return {
-          dt: key.replace(/forex:/, ''),
-          rates: all_rates[key]
-        };
-      });
+    var keys = Object.keys(all_rates).sort();
+    var historical_keys = keys.slice(keys.length - 100);
+    var historical_rates = historical_keys.map(function(key) {
+      return {
+        dt: key.replace(/forex:/, ''),
+        rates: all_rates[key]
+      };
+    });
     res.writeHead(200, {'Content-Type': 'application/json'});
     res.end(JSON.stringify(historical_rates));
     console.timeEnd(req.url);

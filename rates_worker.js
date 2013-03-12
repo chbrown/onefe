@@ -17,7 +17,7 @@ function fetch() {
     var date_iso8601 = date.toISOString().split('.')[0];
     var redis_key = 'forex:' + date_iso8601;
 
-    redis.set(redis_key, JSON.stringify(exchange.rates), function(err) {
+    pub_redis.set(redis_key, JSON.stringify(exchange.rates), function(err) {
       if (err) console.error(err);
       console.log('Fetched rates into key: ' + redis_key);
       pub_redis.publish('forex', JSON.stringify({date: date_iso8601, rates: exchange.rates}));

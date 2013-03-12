@@ -22,8 +22,8 @@
 <div id="chart"></div>
 
 <script>
-var rates = {{{rates | JSON.stringify}}},
-  currencies = {{{currencies | JSON.stringify}}},
+var rates = {{{JSON.stringify(rates)}}},
+  currencies = {{{JSON.stringify(currencies)}}},
   width = 0,
   height = 0,
   USD = localStorage.USD || 100,
