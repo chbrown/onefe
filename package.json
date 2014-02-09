@@ -1,18 +1,32 @@
 {
-  "name": "forex",
-  "version": "0.1.0",
-  "homepage": "http://forex.com/",
+  "name": "onefe",
+  "version": "0.2.0",
+  "homepage": "http://onefe.com/",
   "repository" : {
     "type" : "git",
-    "url" : "git://github.com/chbrown/forex.git"
+    "url" : "git://github.com/chbrown/onefe.git"
   },
   "author" : "Christopher Brown <io@henrian.com>",
-  "main" : "forex.js",
+  "main" : "onefe.js",
   "dependencies" : {
-    "amulet": "git://github.com/chbrown/amulet.git",
+    "amulet": "*",
     "open-exchange-rates": "*",
     "optimist": "*",
     "redis": "*",
+    "regex-router": "*",
+    "sv": "*",
     "underscore": "*"
-  }
+  },
+  "staticDependencies": {
+    "angular": "*",
+    "d3": "*",
+    "ngStorage": {
+      "url": "git://github.com/gsklee/ngStorage.git",
+      "filter": ["ngStorage.js", "ngStorage.min.js"]
+    },
+    "jquery": "*",
+    "misc-js": "git://github.com/chbrown/misc-js.git",
+    "underscore": "*"
+  },
+  "staticPattern": "static/lib/{file}"
 }
