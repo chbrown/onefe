@@ -16,7 +16,7 @@ if (require.main === module) {
     })
     .default({
       hostname: '127.0.0.1',
-      port: 6501,
+      port: 3261,
       exchange_app_id: '28967c4d6b86479bb36a407440bc6f0c',
     });
 

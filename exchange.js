@@ -85,3 +85,5 @@ var downloadRates_interval = milliseconds_per_month / queries_per_month;
 logger.info('Starting downloadRates loop (interval=%d ms)', downloadRates_interval);
 setInterval(downloadRates, downloadRates_interval);
 // downloadRates();
+
+loadCurrencies();
