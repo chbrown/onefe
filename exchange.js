@@ -10,7 +10,7 @@ var pushAll = function(array, xs) { return Array.prototype.push.apply(array, xs)
 
 var ns = function(/* parts... */) {
   // var parts = Array.prototype.slice.call(arguments, 0);
-  return Array.prototype.concat.apply(['onefe-v2'], arguments).join(':');
+  return Array.prototype.concat.apply(['onefe', 'v0.2'], arguments).join(':');
 };
 
 // GLOBALS:

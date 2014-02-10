@@ -48,7 +48,7 @@ var load = function(current_rates, currencies) {
       current_domain[0] = USD;
       usdScale = usdScale.domain(current_domain);
     }
-    // console.log('syncInputs', anchor, USD);
+
     if (anchor !== 'l') {
       $('#left input.currency').val(left_currency);
       $('#left select.currency option[value="' + left_currency + '"]').prop('selected', true);
@@ -336,7 +336,7 @@ var load = function(current_rates, currencies) {
           .text(pt.line.text + ' (' + pt.text + ')');
 
       // closest_name] + ': ' + h.rates[closest_name].toFixed(2) + ' (' + date + ')'
-      // console.log(closest_name + ' (' + currencies[closest_name] + ') ' + h.rates[closest_name]);
+      // log(closest_name + ' (' + currencies[closest_name] + ') ' + h.rates[closest_name]);
     });
   }
 
