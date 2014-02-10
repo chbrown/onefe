@@ -14,6 +14,8 @@ if (require.main === module) {
       port: 'port to listen on',
       exchange_app_id: 'App ID at openexchangerates.org',
     })
+    .boolean(['help', 'verbose', 'version'])
+    .alias({verbose: 'v'})
     .default({
       hostname: '127.0.0.1',
       port: 3261,
@@ -21,6 +23,7 @@ if (require.main === module) {
     });
 
   var argv = optimist.argv;
+  logger.level = argv.verbose ? 'debug' : 'info';
 
   open_exchange_rates.set({app_id: argv.exchange_app_id});
 

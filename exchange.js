@@ -10,7 +10,7 @@ var pushAll = function(array, xs) { return Array.prototype.push.apply(array, xs)
 
 var ns = function(/* parts... */) {
   // var parts = Array.prototype.slice.call(arguments, 0);
-  return Array.prototype.concat.apply(['onefe'], arguments).join(':');
+  return Array.prototype.concat.apply(['onefe-v2'], arguments).join(':');
 };
 
 // GLOBALS:
@@ -46,7 +46,7 @@ var downloadRates = function() {
     // truncate fractional seconds and timezone from date string
     var date_string = date.toISOString().replace(/\..+/g, '').replace(/:/g, '-');
     var key = ns(date_string);
-    // `key` will be something like "onefe:2014-02-10T01-01-02"
+    // `key` will be something like "<prefix>:2014-02-10T01-01-02"
     r.hmset(key, rates, function(err) {
       if (err) return logger.error(err);
 
@@ -75,7 +75,7 @@ setInterval(refreshHistory, refreshHistory_interval);
 refreshHistory();
 
 // Every time we fetch rates from an API, we store them in redis, with a key
-// timestamped like "onefe:2014-02-10T01-01-02", i.e., UTC and a format that
+// timestamped like "<prefix>:2014-02-10T01-01-02", i.e., UTC and a format that
 // resembles ISO-8601
 var milliseconds_per_month = 60*60*24*31*1000;
 // "open" exchange rates closes its rates after 1000 queries per month

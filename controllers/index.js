@@ -16,7 +16,7 @@ R.any(/^\/static/, require('./static'));
 Render page with the latest rates and information about the currencies */
 R.get('/', function(req, res) {
   amulet.stream(['layout.mu', 'index.mu'], {
-    rates: _.last(exchange.history),
+    current_rates: _.last(exchange.history),
     currencies: exchange.currencies,
   }).pipe(res);
 });
@@ -24,14 +24,7 @@ R.get('/', function(req, res) {
 /** GET /history.json
 Return up to last 100 data points for each currency */
 R.get('/history.json', function(req, res) {
-  // console.log('exchange.history', exchange.history);
-  var rates_objects = exchange.history.map(function(rates) {
-    return {
-      dt: rates.timestamp,
-      rates: _.omit(rates, 'timestamp'),
-    };
-  });
-  res.json(rates_objects);
+  res.json(exchange.history);
 });
 
 module.exports = R.route.bind(R);
