@@ -1,0 +1,17 @@
+body{background:transparent url(/static/tiny_grid.png) repeat top left;font-family:'Helvetica Neue',Helvetica,Arial;margin:0}
+button,input,textarea{box-sizing:border-box}
+.nowrap{white-space:nowrap}
+#chart{width:800px}
+#bg{z-index:-1;position:absolute}
+#bg text{font-size:12px}
+#input{font:20px 'Helvetica Neue',Helvetica,Arial;margin:0 auto;padding:5px 0;height:40px}
+#input #left,#input #right,#input select{width:240px}
+#input #left{float:left}
+#input #right{float:right}
+#input input{font:inherit;text-align:center}
+#input input.currency{width:60px}
+#input .units{width:180px}
+#input select{position:relative;top:-5px}
+#chart{margin:30px auto}
+.platform{border:1px solid gray}
+.track{stroke:#222;fill:#fff}

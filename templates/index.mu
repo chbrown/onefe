@@ -22,21 +22,21 @@
 <div id="chart"></div>
 
 <script>
-var rates = {{{JSON.stringify(rates)}}},
-  currencies = {{{JSON.stringify(currencies)}}},
-  width = 0,
-  height = 0,
-  USD = localStorage.USD || 100,
-  left_currency = localStorage.left_currency || 'USD',
-  right_currency = localStorage.right_currency || 'ISK';
+var rates = {{{JSON.stringify(rates)}}};
+var currencies = {{{JSON.stringify(currencies)}}};
+var width = 0;
+var height = 0;
+var USD = localStorage.USD || 100;
+var left_currency = localStorage.left_currency || 'USD';
+var right_currency = localStorage.right_currency || 'ISK';
 
 function constrain(num, min, max) {
   return Math.max(min, Math.min(max, num));
 }
 
-head.ready(function() {
+$(function() {
   width = $("#chart").width();
-  height = document.height * 0.85;
+  height = $(document).height() * 0.85;
   $("#chart").height(height);
   $('#input').width(width);
   var options = $.map(currencies, function(name, abbr) { return '<option value="' + abbr + '">' + name + '</option>'; }).join('');
@@ -171,6 +171,7 @@ head.ready(function() {
       // format = function(d) { return formatNumber(d) + " TWh"; },
       // color = d3.scale.category20();
 
+  console.log("using w/h", width, height);
   var svg = d3.
     select("#chart")
       .attr("width", width)
@@ -310,8 +311,8 @@ head.ready(function() {
 
   function drawBg(historical_rates) {
     var bg_svg = d3.select("#bg").append("svg")
-      .attr("width", document.width)
-      .attr("height", document.height - 10);
+      .attr("width", $(document).width())
+      .attr("height", $(document).height() - 10);
 
     var abbrs = Object.keys(currencies),
       names = abbrs.map(function(abbr) { return currencies[abbr]; }),
@@ -328,8 +329,8 @@ head.ready(function() {
       });
     }
 
-    var xScale = d3.scale.linear().domain(plot.extentX()).range([0, document.width]),
-      yScale = d3.scale.linear().domain([0.952, 1.05]).range([0, document.height]);
+    var xScale = d3.scale.linear().domain(plot.extentX()).range([0, $(document).width()]),
+      yScale = d3.scale.linear().domain([0.952, 1.05]).range([0, $(document).height()]);
 
 
     bg_svg.selectAll('path')

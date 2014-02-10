@@ -10,10 +10,14 @@
   "main" : "onefe.js",
   "dependencies" : {
     "amulet": "*",
+    "async": "*",
+    "http-enhanced": "*",
+    "loge": "*",
     "open-exchange-rates": "*",
     "optimist": "*",
     "redis": "*",
     "regex-router": "*",
+    "send": "*",
     "sv": "*",
     "underscore": "*"
   },
