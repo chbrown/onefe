@@ -33,6 +33,8 @@ var refreshHistory = function() {
     }
     else {
       logger.error('Rates cannot be found; no "%s" keys exist', ns('*'));
+
+      redis_client.quit();
     }
   });
 };
