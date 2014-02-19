@@ -18,15 +18,17 @@ exports.currencies = {};
 exports.history = [];
 
 var refreshHistory = function() {
-  var r = redis.createClient();
-  r.keys(ns('*'), function(err, all_keys) {
+  var redis_client = redis.createClient();
+  redis_client.keys(ns('*'), function(err, all_keys) {
     // sort the keys and keep only the 100 most recent
     var keys = all_keys.sort().slice(-100);
     if (keys.length) {
-      async.map(keys, r.hgetall.bind(r), function(err, history) {
+      async.map(keys, redis_client.hgetall.bind(redis_client), function(err, history) {
         // update by reference
         exports.history.length = 0;
         pushAll(exports.history, history);
+
+        redis_client.quit();
       });
     }
     else {
@@ -36,7 +38,7 @@ var refreshHistory = function() {
 };
 
 var downloadRates = function() {
-  var r = redis.createClient();
+  var redis_client = redis.createClient();
   open_exchange_rates.load(function(err) {
     if (err) return logger.error(err);
 
@@ -47,10 +49,12 @@ var downloadRates = function() {
     var date_string = date.toISOString().replace(/\..+/g, '').replace(/:/g, '-');
     var key = ns(date_string);
     // `key` will be something like "<prefix>:2014-02-10T01-01-02"
-    r.hmset(key, rates, function(err) {
+    redis_client.hmset(key, rates, function(err) {
       if (err) return logger.error(err);
 
       logger.debug('Fetched rates into redis key: %s', key);
+
+      redis_client.quit();
     });
   });
 };
